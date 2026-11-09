@@ -18,24 +18,26 @@ fixed version, or the committed `dist/` files on `main` for the current build.
 
 | File | Purpose |
 | --- | --- |
+| [`dist/manifest.json`](dist/manifest.json) | Installation manifest with a pinned JS entry URL and SHA-256 checksum |
 | [`dist/youtube.js`](dist/youtube.js) | Canonical ES module, identical to `src/index.js`; use with the native host |
-| [`dist/youtube.json`](dist/youtube.json) | Strict UniFiles API v1 manifest; identical to `manifest.json` |
+| [`dist/youtube.json`](dist/youtube.json) | Strict UniFiles API v1 manifest; identical to `plugin.json` |
 | [`dist/index.esm.js`](dist/index.esm.js) | Bundled ESM build |
 | [`dist/index.cjs`](dist/index.cjs) | CommonJS build, preserving the original distribution filename |
 | [`dist/index.iife.min.js`](dist/index.iife.min.js) | Minified bundle exposing `globalThis.UniFilesYouTube` |
 | [`dist/index.d.ts`](dist/index.d.ts) | Provider and host TypeScript interfaces |
-| [`dist/SHA256SUMS`](dist/SHA256SUMS) | SHA-256 checksums for all six files above |
+| [`dist/SHA256SUMS`](dist/SHA256SUMS) | SHA-256 checksums for all seven files above |
 
 Latest release asset URLs:
 
 ```text
+https://github.com/monokaijs/unifiles-youtube/releases/latest/download/manifest.json
 https://github.com/monokaijs/unifiles-youtube/releases/latest/download/youtube.js
 https://github.com/monokaijs/unifiles-youtube/releases/latest/download/youtube.json
 https://github.com/monokaijs/unifiles-youtube/releases/latest/download/index.cjs
 https://github.com/monokaijs/unifiles-youtube/releases/latest/download/SHA256SUMS
 ```
 
-For a pinned version, replace `latest/download` with `download/v1.1.0`.
+For a pinned version, replace `latest/download` with `download/v1.2.0`.
 The original-style raw CommonJS URL is:
 
 ```text
@@ -44,12 +46,22 @@ https://raw.githubusercontent.com/monokaijs/unifiles-youtube/main/dist/index.cjs
 
 Checksums verify file integrity; they are not publisher signatures.
 
-UniFiles loads this provider only after explicit installation. In the app, open
-**Media → Media sources → + → Install plugin** and enter
-`monokaijs/unifiles-youtube`. Installation uses the latest published release,
-verifies its checksums and saves the package locally. Use **Update plugin** in
-media sources to install a newer release; **Remove** unregisters it. A fresh app
-has no YouTube source. Updates are explicit rather than automatic.
+UniFiles loads this provider only after explicit installation. Open
+**Media → Media sources → + → Install plugin** and paste this manifest URL:
+
+```text
+https://github.com/monokaijs/unifiles-youtube/releases/latest/download/manifest.json
+```
+
+The root `manifest.json` and `dist/manifest.json` are generated installation
+manifests. They include the provider identity, API version, permissions, an
+absolute `entry` URL pinned to this release, and the entry file’s hex `sha256`.
+Any HTTPS host can serve this format; GitHub is only the hosting location here.
+The app checks the source checksum and saves the package locally. Updates use
+the saved manifest URL. A fresh app has no YouTube source; Remove unregisters it.
+
+`plugin.json` contains the strict runtime metadata used to generate both the
+installation manifest and the legacy `youtube.json` runtime manifest.
 
 ## API
 
@@ -112,20 +124,20 @@ Pushes to `main`, pull requests, and manual runs build and test the source, chec
 that committed `dist/` matches a fresh build, and upload a downloadable Actions
 artifact. CI uses Node.js 24 and Rust 1.88.0 with locked dependencies.
 
-To release, update the version in both `package.json` and `manifest.json`, refresh
+To release, update the version in both `package.json` and `plugin.json`, refresh
 the npm lockfile, rebuild and commit, then push a matching `vX.Y.Z` tag. The release
 job runs only after the checks pass and uploads every `dist/` file to GitHub Releases.
 The build rejects tags that do not match the package/manifest version. Release tags
 should be immutable; use a new version for corrections.
 
 ```sh
-npm version 1.0.1 --no-git-tag-version
-# Update manifest.json to the same version.
+npm version 1.2.1 --no-git-tag-version
+# Update plugin.json to the same version.
 npm run check
-git add package.json package-lock.json manifest.json dist
-git commit -m "chore(release): prepare v1.0.1"
-git tag -a v1.0.1 -m "YouTube source v1.0.1"
-git push origin main v1.0.1
+git add package.json package-lock.json plugin.json manifest.json dist
+git commit -m "chore(release): prepare v1.2.1"
+git tag -a v1.2.1 -m "YouTube source v1.2.1"
+git push origin main v1.2.1
 ```
 
 This repository publishes GitHub source and release assets, not an npm package.

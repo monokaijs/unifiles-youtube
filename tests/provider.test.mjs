@@ -123,7 +123,7 @@ for (const [name, provider, globals] of variants) {
 test('native plugin files and checksums match their source', async () => {
   const root = new URL('../', import.meta.url);
   assert.equal(await readFile(new URL('src/index.js', root), 'utf8'), await readFile(new URL('dist/youtube.js', root), 'utf8'));
-  assert.equal(await readFile(new URL('manifest.json', root), 'utf8'), await readFile(new URL('dist/youtube.json', root), 'utf8'));
+  assert.equal(await readFile(new URL('plugin.json', root), 'utf8'), await readFile(new URL('dist/youtube.json', root), 'utf8'));
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
   assert.deepEqual(normalize(manifest.capabilities), ['http']);
   assert.equal(manifest.apiVersion, 1);
@@ -134,4 +134,15 @@ test('native plugin files and checksums match their source', async () => {
     const [expected, file] = line.split('  ');
     assert.equal(createHash('sha256').update(await readFile(new URL(`dist/${file}`, root))).digest('hex'), expected);
   }
+});
+
+test('installation manifest pins the published module and verifies its bytes', async () => {
+  const root = new URL('../', import.meta.url);
+  const document = await readFile(new URL('manifest.json', root), 'utf8');
+  assert.equal(document, await readFile(new URL('dist/manifest.json', root), 'utf8'));
+  const manifest = JSON.parse(document);
+  const { entry, sha256, ...runtime } = manifest;
+  assert.deepEqual(runtime, JSON.parse(await readFile(new URL('plugin.json', root), 'utf8')));
+  assert.equal(entry, `https://github.com/monokaijs/unifiles-youtube/releases/download/v${runtime.version}/youtube.js`);
+  assert.equal(sha256, createHash('sha256').update(await readFile(new URL('dist/youtube.js', root))).digest('hex'));
 });

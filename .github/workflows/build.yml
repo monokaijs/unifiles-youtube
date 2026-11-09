@@ -29,7 +29,7 @@ jobs:
           RUSTUP_TOOLCHAIN: 1.88.0
       - name: Verify committed distribution is reproducible
         run: |
-          git diff --exit-code -- dist
+          git diff --exit-code -- dist manifest.json
           if [ -n "$(git ls-files --others --exclude-standard -- dist)" ]; then
             echo "Untracked distribution files: rebuild and commit dist/." >&2
             exit 1
