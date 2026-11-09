@@ -15,16 +15,7 @@ const variants = [
   ['CommonJS', require('../dist/index.cjs'), globalThis], ['IIFE', context.UniFilesYouTube, context],
 ];
 const normalize = value => JSON.parse(JSON.stringify(value));
-const track = {
-  musicResponsiveListItemRenderer: {
-    flexColumns: [
-      { musicResponsiveListItemFlexColumnRenderer: { text: { runs: [{ text: 'Song', navigationEndpoint: { watchEndpoint: { videoId: 'jNQXAC9IVRw' } } }] } } },
-      { musicResponsiveListItemFlexColumnRenderer: { text: { runs: [{ text: 'Artist • 1:02:03' }] } } },
-    ],
-    thumbnail: { thumbnails: [{ url: 'https://images.example/small' }, { url: 'https://images.example/large' }] },
-    menu: { watchEndpoint: { videoId: 'wrong-video' } },
-  },
-};
+const track = {videoRenderer:{videoId:'jNQXAC9IVRw',title:{simpleText:'Song'},ownerText:{simpleText:'Artist - Topic'},lengthText:{simpleText:'1:02:03'},thumbnail:{thumbnails:[{url:'https://images.example/small'},{url:'https://images.example/large'}]},menu:{videoId:'wrong-video'}}};
 const player = formats => ({ playabilityStatus: { status: 'OK' }, streamingData: formats, videoDetails: { lengthSeconds: '120' } });
 
 for (const [name, provider, globals] of variants) {
@@ -39,7 +30,7 @@ for (const [name, provider, globals] of variants) {
     assert.equal(provider.parsePage({ sourceInstanceId: 'youtube', data: Array(510).fill(track) }).items.length, 500);
   });
   test(`${name}: Explore preserves ordered shelves and search stays flat`, () => {
-    const shelf = (title, contents) => ({ musicCarouselShelfRenderer: { header: { musicCarouselShelfBasicHeaderRenderer: { title: { simpleText: title } } }, contents } });
+    const shelf = (title, contents) => ({richShelfRenderer:{title:{simpleText:title},contents}});
     const data = { contents: [shelf('Trending', [track, track]), shelf('New music videos', [track])] };
     const page = provider.parsePage({ sourceInstanceId: 'youtube', data, offset: 10 });
     assert.deepEqual(normalize(page.sections), [
@@ -50,16 +41,6 @@ for (const [name, provider, globals] of variants) {
     const search = provider.parsePage({ sourceInstanceId: 'youtube', data, query: 'song' });
     assert.equal(search.items.length, 3);
     assert.equal(search.sections.length, 0);
-  });
-  test(`${name}: home credits are deduplicated and unrelated menus are ignored`, () => {
-    const row = { musicTwoRowItemRenderer: {
-      subtitle: { runs: [{ text: 'Artist', navigationEndpoint: { browseEndpoint: { browseId: 'UCartist' } } }] },
-      menu: { navigationEndpoint: { browseEndpoint: { browseId: 'UCunrelated' } } },
-    } };
-    const page = provider.parsePage({ sourceInstanceId: 'youtube', data: [row, row] });
-    assert.equal(page.items.length, 1);
-    assert.equal(page.items[0].reference.itemId, 'UCartist');
-    assert.equal(page.items[0].playable, false);
   });
   test(`${name}: default adaptive audio wins and progressive fallback includes audio`, () => {
     const low = { mimeType: 'audio/mp4; codecs="mp4a.40.2"', url: 'https://r1.googlevideo.com/low', bitrate: 64000 };
@@ -89,17 +70,17 @@ for (const [name, provider, globals] of variants) {
       const page = await provider.browse({ sourceInstanceId: 'youtube', query: 'Beethoven' });
       assert.equal(page.items[0].reference.sourceInstanceId, 'youtube');
       assert.equal(requests[0].method, 'POST');
-      assert.equal(requests[0].url, 'https://music.youtube.com/youtubei/v1/search');
+      assert.equal(requests[0].url, 'https://www.youtube.com/youtubei/v1/search');
       const body = JSON.parse(requests[0].body);
       assert.equal(body.query, 'Beethoven');
-      assert.equal(body.context.client.clientName, 'WEB_REMIX');
+      assert.equal(body.context.client.clientName, 'WEB');
       const cursor = JSON.stringify({ parent: null, query: 'Beethoven', token: 'continuation', offset: 5 });
       const next = await provider.browse({ sourceInstanceId: 'youtube', query: 'Beethoven', cursor });
       assert.equal(next.items[0].id, 'jNQXAC9IVRw:5');
       assert.equal(JSON.parse(requests[1].body).continuation, 'continuation');
       await provider.browse({ sourceInstanceId: 'youtube', parent: 'related:jNQXAC9IVRw' });
-      assert.equal(requests[2].url, 'https://music.youtube.com/youtubei/v1/next');
-      assert.equal(JSON.parse(requests[2].body).playlistId, 'RDAMVMjNQXAC9IVRw');
+      assert.equal(requests[2].url, 'https://www.youtube.com/youtubei/v1/next');
+      assert.equal(JSON.parse(requests[2].body).playlistId, 'RDjNQXAC9IVRw');
       const result = await provider.resolve({ sourceInstanceId: 'youtube', itemId: 'jNQXAC9IVRw' });
       assert.equal(result.mimeType, 'audio/mp4');
       assert.equal(requests[3].url, 'https://www.youtube.com/youtubei/v1/player');
@@ -145,4 +126,16 @@ test('installation manifest pins the published module and verifies its bytes', a
   assert.deepEqual(runtime, JSON.parse(await readFile(new URL('plugin.json', root), 'utf8')));
   assert.equal(entry, `https://github.com/monokaijs/unifiles-youtube/releases/download/v${runtime.version}/youtube.js`);
   assert.equal(sha256, createHash('sha256').update(await readFile(new URL('dist/youtube.js', root))).digest('hex'));
+});
+
+test('regular YouTube modern playlist and video lockups retain artwork, credits and duration', async () => {
+  const rows = JSON.parse(await readFile(new URL('./fixtures/web-lockups.json', import.meta.url), 'utf8'));
+  const page = canonical.parsePage({sourceInstanceId:'youtube',data:rows.map(lockupViewModel=>({lockupViewModel}))});
+  assert.equal(page.items.length, 2);
+  assert.equal(page.items[0].kind, 'collection');
+  assert.match(page.items[0].reference.itemId, /^VLRD/);
+  assert.equal(page.items[1].kind, 'track');
+  assert.ok(page.items[1].subtitle);
+  assert.ok(page.items[1].durationMs > 0);
+  assert.ok(page.items.every(item=>item.artwork.startsWith('https://')));
 });

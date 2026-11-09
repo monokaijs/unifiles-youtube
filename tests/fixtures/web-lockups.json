@@ -1,0 +1,488 @@
+[
+  {
+    "contentImage": {
+      "collectionThumbnailViewModel": {
+        "primaryThumbnail": {
+          "thumbnailViewModel": {
+            "image": {
+              "sources": [
+                {
+                  "url": "https://i9.ytimg.com/s_p/RDCLAK5uy_k5n4srrEB1wgvIjPNTXS9G1ufE9WQxhnA/mqdefault.jpg?sqp=CMyWyNcGir7X7AMICKLNt9cGEAE=&rs=AOn4CLA5Rl_DODitctXgBZ8R212rryv8ug&v=1793975970",
+                  "width": 180,
+                  "height": 180
+                },
+                {
+                  "url": "https://i9.ytimg.com/s_p/RDCLAK5uy_k5n4srrEB1wgvIjPNTXS9G1ufE9WQxhnA/sddefault.jpg?sqp=CMyWyNcGir7X7AMICKLNt9cGEAE=&rs=AOn4CLCFzZjUHi72sPWtOnqXwQh146Ahzw&v=1793975970",
+                  "width": 640,
+                  "height": 640
+                },
+                {
+                  "url": "https://i9.ytimg.com/s_p/RDCLAK5uy_k5n4srrEB1wgvIjPNTXS9G1ufE9WQxhnA/maxresdefault.jpg?sqp=CMyWyNcGir7X7AMICKLNt9cGEAE=&rs=AOn4CLCozn1cUq6orxX8sponm0dqfhHVcw&v=1793975970",
+                  "width": 1200,
+                  "height": 1200
+                }
+              ]
+            },
+            "overlays": [
+              {
+                "thumbnailOverlayBadgeViewModel": {
+                  "thumbnailBadges": [
+                    {
+                      "thumbnailBadgeViewModel": {
+                        "icon": {
+                          "sources": [
+                            {
+                              "clientResource": {
+                                "imageName": "MUSIC"
+                              }
+                            }
+                          ]
+                        },
+                        "text": "79 songs",
+                        "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+                        "backgroundColor": {
+                          "lightTheme": 3355443,
+                          "darkTheme": 3355443
+                        }
+                      }
+                    }
+                  ],
+                  "position": "THUMBNAIL_OVERLAY_BADGE_POSITION_BOTTOM_END"
+                }
+              },
+              {
+                "thumbnailHoverOverlayViewModel": {
+                  "icon": {
+                    "sources": [
+                      {
+                        "clientResource": {
+                          "imageName": "PLAY_ALL"
+                        }
+                      }
+                    ]
+                  },
+                  "text": {
+                    "content": "Play all"
+                  },
+                  "style": "THUMBNAIL_HOVER_OVERLAY_STYLE_COVER"
+                }
+              }
+            ],
+            "backgroundColor": {
+              "lightTheme": 4144959,
+              "darkTheme": 4144959
+            }
+          }
+        },
+        "stackColor": {
+          "lightTheme": 10066329,
+          "darkTheme": 9211020
+        }
+      }
+    },
+    "metadata": {
+      "lockupMetadataViewModel": {
+        "title": {
+          "content": "RELEASED"
+        },
+        "metadata": {
+          "contentMetadataViewModel": {
+            "metadataRows": [
+              {
+                "metadataParts": [
+                  {
+                    "text": {
+                      "content": "YouTube Music"
+                    }
+                  },
+                  {
+                    "text": {
+                      "content": "Playlist"
+                    }
+                  }
+                ]
+              },
+              {
+                "metadataParts": [
+                  {
+                    "text": {
+                      "content": "Updated today"
+                    }
+                  }
+                ]
+              },
+              {
+                "metadataParts": [
+                  {
+                    "text": {
+                      "content": "View full playlist"
+                    }
+                  }
+                ]
+              }
+            ],
+            "delimiter": " • "
+          }
+        }
+      }
+    },
+    "contentId": "RDCLAK5uy_k5n4srrEB1wgvIjPNTXS9G1ufE9WQxhnA",
+    "contentType": "LOCKUP_CONTENT_TYPE_STATION"
+  },
+  {
+    "contentImage": {
+      "thumbnailViewModel": {
+        "image": {
+          "sources": [
+            {
+              "url": "https://i.ytimg.com/vi/gpverHkcoOY/hq720.jpg?sqp=-oaymwEnCOgCEMoBSFryq4qpAxkIARUAAAAAGAElAADIQj0AgKJDeAG4AvcY&rs=AOn4CLBeQFBZ7ZGNIfwPSiXNPyi3MfIveg",
+              "width": 360,
+              "height": 202
+            },
+            {
+              "url": "https://i.ytimg.com/vi/gpverHkcoOY/hq720.jpg?sqp=-oaymwEbCNAFEJQDSFryq4qpAw0IARUAAIhCGAG4AvcY&rs=AOn4CLAvpkdJ61inxvaAC8BJRCXrBgt4eA",
+              "width": 720,
+              "height": 404
+            }
+          ]
+        },
+        "overlays": [
+          {
+            "thumbnailBottomOverlayViewModel": {
+              "badges": [
+                {
+                  "thumbnailBadgeViewModel": {
+                    "icon": {
+                      "sources": [
+                        {
+                          "clientResource": {
+                            "imageName": "MUSIC"
+                          }
+                        }
+                      ]
+                    },
+                    "text": "2:37",
+                    "badgeStyle": "THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT",
+                    "animationActivationTargetId": "gpverHkcoOY",
+                    "animationActivationEntityKey": "Eh8veW91dHViZS9hcHAvd2F0Y2gvcGxheWVyX3N0YXRlIMMCKAE%3D",
+                    "lottieData": {
+                      "url": "https://www.gstatic.com/youtube/img/lottie/audio_indicator/audio_indicator_v2.json",
+                      "settings": {
+                        "loop": true,
+                        "autoplay": true
+                      }
+                    },
+                    "animatedText": "Now playing",
+                    "animationActivationEntitySelectorType": "THUMBNAIL_BADGE_ANIMATION_ENTITY_SELECTOR_TYPE_PLAYER_STATE",
+                    "inlinePlaybackBadgeData": {
+                      "replicateAsTimestamp": true
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "thumbnailHoverOverlayToggleActionsViewModel": {
+              "buttons": [
+                {
+                  "toggleButtonViewModel": {
+                    "defaultButtonViewModel": {
+                      "buttonViewModel": {
+                        "iconName": "WATCH_LATER",
+                        "accessibilityText": "Watch later",
+                        "style": "BUTTON_VIEW_MODEL_STYLE_OVERLAY_DARK",
+                        "type": "BUTTON_VIEW_MODEL_TYPE_TONAL",
+                        "buttonSize": "BUTTON_VIEW_MODEL_SIZE_COMPACT",
+                        "state": "BUTTON_VIEW_MODEL_STATE_ACTIVE"
+                      }
+                    },
+                    "toggledButtonViewModel": {
+                      "buttonViewModel": {
+                        "iconName": "CHECK",
+                        "accessibilityText": "Added",
+                        "style": "BUTTON_VIEW_MODEL_STYLE_OVERLAY_DARK",
+                        "type": "BUTTON_VIEW_MODEL_TYPE_TONAL",
+                        "buttonSize": "BUTTON_VIEW_MODEL_SIZE_COMPACT",
+                        "state": "BUTTON_VIEW_MODEL_STATE_ACTIVE"
+                      }
+                    },
+                    "isToggled": false
+                  }
+                },
+                {
+                  "toggleButtonViewModel": {
+                    "defaultButtonViewModel": {
+                      "buttonViewModel": {
+                        "iconName": "ADD_TO_QUEUE_TAIL",
+                        "accessibilityText": "Add to queue",
+                        "style": "BUTTON_VIEW_MODEL_STYLE_OVERLAY_DARK",
+                        "type": "BUTTON_VIEW_MODEL_TYPE_TONAL",
+                        "buttonSize": "BUTTON_VIEW_MODEL_SIZE_COMPACT",
+                        "state": "BUTTON_VIEW_MODEL_STATE_ACTIVE"
+                      }
+                    },
+                    "toggledButtonViewModel": {
+                      "buttonViewModel": {
+                        "iconName": "CHECK",
+                        "accessibilityText": "Added",
+                        "style": "BUTTON_VIEW_MODEL_STYLE_OVERLAY_DARK",
+                        "type": "BUTTON_VIEW_MODEL_TYPE_TONAL",
+                        "buttonSize": "BUTTON_VIEW_MODEL_SIZE_COMPACT",
+                        "state": "BUTTON_VIEW_MODEL_STATE_ACTIVE"
+                      }
+                    },
+                    "isToggled": false
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "lockupMetadataViewModel": {
+        "title": {
+          "content": "THEKIDSZN - IMPULSIVE (OFFICIAL LYRIC VIDEO)"
+        },
+        "image": {
+          "decoratedAvatarViewModel": {
+            "avatar": {
+              "avatarViewModel": {
+                "image": {
+                  "sources": [
+                    {
+                      "url": "https://yt3.googleusercontent.com/axZKPXE0pKYvb401TIit91MFplcpfbkWCxckxN8wFckTikN-LEioDH2ut2Lfq1Yhspv3NG3VCg=s88-c-k-c0x00ffffff-no-rj",
+                      "width": 68,
+                      "height": 68
+                    }
+                  ]
+                },
+                "avatarImageSize": "AVATAR_SIZE_M"
+              }
+            },
+            "a11yLabel": "Go to channel thekidszn"
+          }
+        },
+        "metadata": {
+          "contentMetadataViewModel": {
+            "metadataRows": [
+              {
+                "metadataParts": [
+                  {
+                    "text": {
+                      "content": "thekidszn",
+                      "attachmentRuns": [
+                        {
+                          "startIndex": 9,
+                          "length": 0,
+                          "element": {
+                            "type": {
+                              "imageType": {
+                                "image": {
+                                  "sources": [
+                                    {
+                                      "clientResource": {
+                                        "imageName": "AUDIO_BADGE"
+                                      },
+                                      "width": 14,
+                                      "height": 14
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            "properties": {
+                              "layoutProperties": {
+                                "height": {
+                                  "value": 14,
+                                  "unit": "DIMENSION_UNIT_POINT"
+                                },
+                                "width": {
+                                  "value": 14,
+                                  "unit": "DIMENSION_UNIT_POINT"
+                                },
+                                "margin": {
+                                  "left": {
+                                    "value": 4,
+                                    "unit": "DIMENSION_UNIT_POINT"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "alignment": "ALIGNMENT_VERTICAL_CENTER"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "metadataParts": [
+                  {
+                    "text": {
+                      "content": "537K views"
+                    }
+                  },
+                  {
+                    "text": {
+                      "content": "2 weeks ago"
+                    },
+                    "accessibilityLabel": "2 weeks ago"
+                  }
+                ]
+              }
+            ],
+            "delimiter": " • "
+          }
+        },
+        "menuButton": {
+          "buttonViewModel": {
+            "iconName": "MORE_VERT",
+            "accessibilityText": "More actions",
+            "style": "BUTTON_VIEW_MODEL_STYLE_MONO",
+            "type": "BUTTON_VIEW_MODEL_TYPE_TEXT",
+            "buttonSize": "BUTTON_VIEW_MODEL_SIZE_DEFAULT",
+            "state": "BUTTON_VIEW_MODEL_STATE_ACTIVE"
+          }
+        }
+      }
+    },
+    "contentId": "gpverHkcoOY",
+    "contentType": "LOCKUP_CONTENT_TYPE_VIDEO",
+    "themedPalette": {
+      "lightThemePalette": {
+        "baseBackground": 4293983487,
+        "raisedBackground": 4293983487,
+        "additiveBackground": 558214345,
+        "textPrimary": 4278791479,
+        "textSecondary": 4281558902,
+        "outline": 856899918,
+        "keyLight": 4289254625,
+        "collectionStack": 4286822856,
+        "invertedBackground": 4279858576,
+        "textPrimaryInverse": 4293983487,
+        "textDisabled": 2131968334,
+        "dropShadow": 423996617,
+        "cardOutline": 172338377,
+        "overlayBackground": 3423153463,
+        "overlayTextPrimary": 4293983487,
+        "solidWash": 4279451982,
+        "solidRim": 4278791479,
+        "overlaySolidWash": 4292933115,
+        "overlaySolidRim": 4293983487,
+        "tonalWash": 2582707455,
+        "tonalRim": 201329679,
+        "overlayTonalWash": 435223807,
+        "overlayTonalRim": 435223807,
+        "outlineRim": 1276330318,
+        "overlayOutlineRim": 868805363,
+        "solidWashInverse": 4291357427,
+        "solidRimInverse": 2145449467,
+        "tonalWashInverse": 653327615,
+        "tonalRimInverse": 652277243,
+        "outlineRimInverse": 653327615,
+        "solidBackground": 4279451982,
+        "solidBackgroundInverse": 4286822856,
+        "tonalBackground": 864270792,
+        "tonalBackgroundInverse": 432597747,
+        "outlineInverse": 870381051,
+        "directionalLightStopPrimary": 4292933115,
+        "directionalLightStopSecondary": 4293983487,
+        "primary": 4278193167,
+        "filledStateLayer": 4278791479,
+        "tonalTouchLight": 4293983487,
+        "tonalHoverLight": 3437295099,
+        "tonalStateLayer": 419433487,
+        "overlayDisabledContainer": 868805363,
+        "overlayTonalTouchLight": 1289811451,
+        "overlayTonalHoverLight": 1289811451,
+        "overlayTonalStateLayer": 435223807,
+        "disabledContainer": 419433487,
+        "filledTouchLight": 4281558902,
+        "filledHoverLight": 4280505442,
+        "onOverlayDisabledContainer": 2582707455,
+        "overlayTonalContainer": 2581657083,
+        "overlayOutline": 871431423,
+        "onFilledContainer": 4293983487,
+        "filledContainer": 4278327068,
+        "tonalContainer": 638135607,
+        "overlayPrimary": 4293983487,
+        "onOverlayFilledContainer": 4278193167,
+        "overlayFilledTouchLight": 4293983487,
+        "overlayFilledHoverLight": 4292933115,
+        "overlayFilledStateLayer": 4289254625,
+        "overlayFilledContainer": 4291357427,
+        "onDisabledContainer": 1711279119,
+        "temporaryOutline": 856899918
+      },
+      "darkThemePalette": {
+        "baseBackground": 4278327068,
+        "raisedBackground": 4278791479,
+        "additiveBackground": 725986505,
+        "textPrimary": 4292933115,
+        "textSecondary": 4289254625,
+        "outline": 1070131955,
+        "keyLight": 4280505442,
+        "collectionStack": 4281558902,
+        "invertedBackground": 4286369251,
+        "textPrimaryInverse": 4278327068,
+        "textDisabled": 2143873779,
+        "dropShadow": 423996617,
+        "cardOutline": 172338377,
+        "overlayBackground": 3423153463,
+        "overlayTextPrimary": 4293983487,
+        "solidWash": 4292933115,
+        "solidRim": 4293983487,
+        "overlaySolidWash": 4292933115,
+        "overlaySolidRim": 4293983487,
+        "tonalWash": 214493939,
+        "tonalRim": 217119999,
+        "overlayTonalWash": 435223807,
+        "overlayTonalRim": 435223807,
+        "outlineRim": 868805363,
+        "overlayOutlineRim": 868805363,
+        "solidWashInverse": 4281558902,
+        "solidRimInverse": 868805363,
+        "tonalWashInverse": 871431423,
+        "tonalRimInverse": 866702561,
+        "outlineRimInverse": 1290861823,
+        "solidBackground": 4286822856,
+        "solidBackgroundInverse": 4279451982,
+        "tonalBackground": 432597747,
+        "tonalBackgroundInverse": 864270792,
+        "outlineInverse": 856899918,
+        "directionalLightStopPrimary": 4278791479,
+        "directionalLightStopSecondary": 4278327068,
+        "primary": 4293983487,
+        "filledStateLayer": 4289254625,
+        "tonalTouchLight": 1071707643,
+        "tonalHoverLight": 652277243,
+        "tonalStateLayer": 435223807,
+        "overlayDisabledContainer": 868805363,
+        "overlayTonalTouchLight": 1289811451,
+        "overlayTonalHoverLight": 1289811451,
+        "overlayTonalStateLayer": 435223807,
+        "disabledContainer": 435223807,
+        "filledTouchLight": 4293983487,
+        "filledHoverLight": 4292933115,
+        "onOverlayDisabledContainer": 2582707455,
+        "overlayTonalContainer": 2581657083,
+        "overlayOutline": 871431423,
+        "onFilledContainer": 4278193167,
+        "filledContainer": 4291357427,
+        "tonalContainer": 432597747,
+        "overlayPrimary": 4293983487,
+        "onOverlayFilledContainer": 4278193167,
+        "overlayFilledTouchLight": 4293983487,
+        "overlayFilledHoverLight": 4292933115,
+        "overlayFilledStateLayer": 4289254625,
+        "overlayFilledContainer": 4291357427,
+        "onDisabledContainer": 1727069439,
+        "temporaryOutline": 868805363
+      }
+    }
+  }
+]

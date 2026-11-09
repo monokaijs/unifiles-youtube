@@ -2,11 +2,11 @@
 
 [![Build and release](https://github.com/monokaijs/unifiles-youtube/actions/workflows/build.yml/badge.svg)](https://github.com/monokaijs/unifiles-youtube/actions/workflows/build.yml)
 
-YouTube Music catalog and audio resolution for **UniFiles plugin API v1**.
+YouTube catalog and audio resolution for **UniFiles plugin API v1**.
 The provider runs in the app's QuickJS interpreter and uses native HTTP through
 `host.http.json`. It has no JavaScript runtime dependencies.
 
-This repository publishes the YouTube source extracted from UniFiles. It follows
+This repository publishes a regular YouTube provider. Home browses YouTube’s Music channel; search, collections and related tracks use the regular WEB catalog. It makes no requests to music.youtube.com. It follows
 the build layout of [minip-ytb-music-source](https://github.com/monokaijs/minip-ytb-music-source):
 ESM, CommonJS, a minified IIFE, and TypeScript declarations under `dist/`. The
 exports implement the current UniFiles API; they are not a drop-in MiniP API adapter.
@@ -37,7 +37,7 @@ https://github.com/monokaijs/unifiles-youtube/releases/latest/download/index.cjs
 https://github.com/monokaijs/unifiles-youtube/releases/latest/download/SHA256SUMS
 ```
 
-For a pinned version, replace `latest/download` with `download/v1.2.0`.
+For a pinned version, replace `latest/download` with `download/v2.0.0`.
 The original-style raw CommonJS URL is:
 
 ```text
@@ -93,7 +93,7 @@ response size limits, cancellation, and interpreter resource limits. Media bytes
 downloads and playback remain native. This plugin needs only the `http` capability;
 it does not require access to files, credentials, cookies, or native crypto.
 
-The manifest allows requests to `music.youtube.com` and `www.youtube.com`, and
+The manifest allows requests to `www.youtube.com`, and
 playback on `*.googlevideo.com`. InnerTube is an unofficial API; availability can
 change. Sign-in requirements and unsupported/cipher-only streams are returned as
 errors. The source does not bypass content or network restrictions.
@@ -114,7 +114,7 @@ artifacts using `rquickjs 0.14.0`, matching the UniFiles host's interpreter bind
 These are deterministic offline tests; they do not claim to test YouTube's current
 network behavior or duplicate the app's native HTTP implementation.
 
-Edit `src/index.js`, `src/index.d.ts`, or `manifest.json`, run the checks, and commit
+Edit `src/index.js`, `src/index.d.ts`, or `plugin.json`, run the checks, and commit
 the regenerated `dist/` files. The canonical module remains directly usable by the
 app without a Node.js bundler at app build time.
 
@@ -131,13 +131,13 @@ The build rejects tags that do not match the package/manifest version. Release t
 should be immutable; use a new version for corrections.
 
 ```sh
-npm version 1.2.1 --no-git-tag-version
+npm version 2.0.1 --no-git-tag-version
 # Update plugin.json to the same version.
 npm run check
 git add package.json package-lock.json plugin.json manifest.json dist
-git commit -m "chore(release): prepare v1.2.1"
-git tag -a v1.2.1 -m "YouTube source v1.2.1"
-git push origin main v1.2.1
+git commit -m "chore(release): prepare v2.0.1"
+git tag -a v2.0.1 -m "YouTube source v2.0.1"
+git push origin main v2.0.1
 ```
 
 This repository publishes GitHub source and release assets, not an npm package.
@@ -145,3 +145,7 @@ This repository publishes GitHub source and release assets, not an npm package.
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Separate YouTube Music source
+
+For the YouTube Music catalog, install [unifiles-youtube-music](https://github.com/monokaijs/unifiles-youtube-music). Its ID is `youtube-music`; this source uses `youtube`, so both can be installed together. Versions 1.x were the former Music provider and are retained for pinned installation URLs. Version 2 starts the regular YouTube catalog. Neither source is built into the app.

@@ -6,7 +6,7 @@ var videoId = (id) => {
   if (!/^[A-Za-z0-9_-]{11}$/.test(id)) fail("invalid_path", "YouTube video ID");
 };
 function text(value) {
-  const result = value?.simpleText ?? value?.runs?.map((r) => r.text ?? "").join("");
+  const result = value?.content ?? value?.simpleText ?? value?.runs?.map((r) => r.text ?? "").join("");
   return result || null;
 }
 function field(value, key) {
@@ -19,7 +19,7 @@ function field(value, key) {
   return null;
 }
 function thumbnail(value) {
-  const url = field(value, "thumbnails")?.at(-1)?.url;
+  const url = (field(value, "thumbnails") ?? field(value, "sources"))?.at(-1)?.url;
   return typeof url === "string" && url.startsWith("https://") ? url : null;
 }
 function duration(value) {
@@ -28,69 +28,47 @@ function duration(value) {
   return Number.isSafeInteger(ms) ? ms : null;
 }
 function renderer(value, source, index) {
-  const first = value.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text;
-  const title = text(first) ?? text(value.title);
+  const modern = value.contentType?.startsWith("LOCKUP_CONTENT_TYPE_");
+  const meta = value.metadata?.lockupMetadataViewModel;
+  const title = text(modern ? meta?.title : value.title);
   if (!title) return null;
-  const subtitle = text(value.flexColumns?.[1]?.musicResponsiveListItemFlexColumnRenderer?.text) ?? text(value.subtitle);
-  const endpoint = first?.runs?.[0]?.navigationEndpoint ?? value.navigationEndpoint;
-  const video = value.playlistItemData?.videoId ?? endpoint?.watchEndpoint?.videoId;
-  const browse2 = endpoint?.browseEndpoint?.browseId;
-  const id = video ?? browse2;
+  const video = modern ? value.contentType === "LOCKUP_CONTENT_TYPE_VIDEO" ? value.contentId : null : value.videoId;
+  const playlist = modern ? /_(PLAYLIST|STATION)$/.test(value.contentType) ? value.contentId : null : value.playlistId;
+  const id = video ?? (playlist ? `VL${playlist}` : value.channelId);
   if (!id) return null;
-  const kind = video ? "track" : id.startsWith("UC") ? "artist" : id.startsWith("MPRE") ? "album" : "collection";
+  const subtitle = modern ? text(meta?.metadata?.contentMetadataViewModel?.metadataRows?.[0]?.metadataParts?.[0]?.text) : text(value.ownerText ?? value.shortBylineText ?? value.longBylineText);
   return {
     id: `${id}:${index}`,
     reference: { sourceInstanceId: source, itemId: id },
     title,
-    kind,
-    subtitle,
+    kind: video ? "track" : playlist ? "collection" : "artist",
+    subtitle: subtitle?.replace(/ - Topic$/, "") ?? null,
     artwork: thumbnail(value),
     playable: !!video,
     resumePositionMs: 0,
-    durationMs: duration(subtitle?.split("•").at(-1)?.trim()) ?? duration(text(value.lengthText)) ?? duration(text(field(value.fixedColumns, "text")))
+    durationMs: duration(text(value.lengthText)) ?? duration(text(field(value, "thumbnailOverlayTimeStatusRenderer")?.text)) ?? duration(field(value, "thumbnailBadgeViewModel")?.text)
   };
 }
-var rowKeys = ["musicResponsiveListItemRenderer", "musicTwoRowItemRenderer", "playlistPanelVideoRenderer"];
-function collect(value, source, items, credits = false) {
+var rowKeys = ["videoRenderer", "gridVideoRenderer", "compactVideoRenderer", "playlistVideoRenderer", "playlistPanelVideoRenderer", "playlistRenderer", "gridPlaylistRenderer", "channelRenderer", "gridChannelRenderer", "lockupViewModel"];
+function collect(value, source, items) {
   if (!value || typeof value !== "object" || items.length >= 500) return;
-  for (const key of credits ? rowKeys.slice(0, 2) : rowKeys) {
-    const row = value[key];
-    if (!row) continue;
-    if (!credits) {
-      const item = renderer(row, source, items.length);
-      if (item) items.push(item);
-    } else {
-      const byline = row.subtitle ?? row.flexColumns?.[1]?.musicResponsiveListItemFlexColumnRenderer?.text;
-      for (const run of byline?.runs ?? []) {
-        if (items.length >= 500) break;
-        const id = run.navigationEndpoint?.browseEndpoint?.browseId;
-        const kind = id?.startsWith("UC") ? "artist" : id?.startsWith("MPRE") ? "album" : null;
-        if (!kind || !run.text?.trim() || items.some((i) => i.reference.itemId === id)) continue;
-        items.push({
-          id,
-          reference: { sourceInstanceId: source, itemId: id },
-          title: run.text,
-          kind,
-          subtitle: null,
-          artwork: kind === "album" ? thumbnail(row) : null,
-          durationMs: null,
-          playable: false,
-          resumePositionMs: 0
-        });
-      }
-    }
+  for (const key of rowKeys) {
+    if (!value[key]) continue;
+    const item = renderer(value[key], source, items.length);
+    if (item) items.push(item);
     return;
   }
-  for (const child of Object.values(value)) collect(child, source, items, credits);
+  for (const [key, child] of Object.entries(value)) {
+    if (!["menu", "trackingParams", "frameworkUpdates", "header"].includes(key)) collect(child, source, items);
+  }
 }
 function collectShelves(value, source, items, sections, offset) {
   if (!value || typeof value !== "object" || items.length >= 500 || sections.length >= 40) return;
-  const shelf = value.musicCarouselShelfRenderer ?? value.musicShelfRenderer;
+  const shelf = value.richShelfRenderer ?? value.shelfRenderer;
   if (shelf) {
-    const title = text(shelf.header?.musicCarouselShelfBasicHeaderRenderer?.title) ?? text(shelf.title);
     const start = items.length;
-    collect(shelf.contents, source, items);
-    if (items.length > start) sections.push({ title: title ?? "Explore", itemIds: items.slice(start).map((item, i) => `${item.reference.itemId}:${offset + start + i}`) });
+    collect(shelf.contents ?? shelf.content, source, items);
+    if (items.length > start) sections.push({ title: text(shelf.title) ?? "Explore", itemIds: items.slice(start).map((item, i) => `${item.reference.itemId}:${offset + start + i}`) });
     return;
   }
   for (const child of Object.values(value)) collectShelves(child, source, items, sections, offset);
@@ -101,11 +79,6 @@ function parsePage({ data, sourceInstanceId, parent = null, query = null, cursor
   const sections = [];
   if (parent === null && query === null) collectShelves(data, sourceInstanceId, items, sections, offset);
   if (!sections.length) collect(data, sourceInstanceId, items);
-  if (parent === null && query === null && cursor === null) {
-    const start = items.length;
-    collect(data, sourceInstanceId, items, true);
-    if (sections.length && sections.length < 40 && items.length > start) sections.push({ title: "Artists & albums", itemIds: items.slice(start).map((item, i) => `${item.reference.itemId}:${offset + start + i}`) });
-  }
   items.forEach((item, i) => {
     item.id = `${item.reference.itemId}:${offset + i}`;
   });
@@ -134,17 +107,17 @@ async function browse({ sourceInstanceId, parent = null, query = null, cursor = 
   } else if (parent?.startsWith("related:")) {
     const id = parent.slice(8);
     videoId(id);
-    body = { videoId: id, playlistId: `RDAMVM${id}` };
+    body = { videoId: id, playlistId: `RD${id}` };
   } else {
-    const id = parent ?? "FEmusic_explore";
+    const id = parent ?? "UC-9-kyTW8ZkZNDHQJ6FgpwQ";
     if (id.length > 512 || !/^[A-Za-z0-9_-]*$/.test(id)) fail("invalid_path", "YouTube collection ID");
     body = { browseId: id };
   }
-  body.context = { client: { clientName: "WEB_REMIX", clientVersion: "1.20261028.01.00", hl: "en", gl: "US" } };
+  body.context = { client: { clientName: "WEB", clientVersion: "2.20261028.01.00", hl: "en", gl: "US" } };
   const data = await host.http.json({
-    url: `https://music.youtube.com/youtubei/v1/${endpoint}`,
+    url: `https://www.youtube.com/youtubei/v1/${endpoint}`,
     method: "POST",
-    headers: { "Content-Type": "application/json", "Origin": "https://music.youtube.com" },
+    headers: { "Content-Type": "application/json", "Origin": "https://www.youtube.com" },
     body: JSON.stringify(body)
   });
   return parsePage({ data, sourceInstanceId, parent, query, cursor, offset });

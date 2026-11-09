@@ -63,4 +63,4 @@ jobs:
         run: |
           gh release create "$RELEASE_TAG" dist/* --verify-tag \
             --title "YouTube source $RELEASE_TAG" \
-            --notes "YouTube Music provider for UniFiles plugin API v1. Includes ESM, CommonJS, IIFE, TypeScript declarations, the native plugin manifest/module pair, and SHA-256 checksums."
+            --notes "Regular YouTube provider for UniFiles plugin API v1. Includes ESM, CommonJS, IIFE, TypeScript declarations, the native plugin manifest/module pair, and SHA-256 checksums."

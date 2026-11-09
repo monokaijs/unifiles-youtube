@@ -33,7 +33,7 @@ mod tests {
                             streamingData:{adaptiveFormats:[{mimeType:'audio/mp4',url:'https://r1.googlevideo.com/audio',bitrate:128000}]},
                             videoDetails:{lengthSeconds:'120'}
                         };
-                        return {musicTwoRowItemRenderer:{title:{simpleText:'Fixture song'},navigationEndpoint:{watchEndpoint:{videoId:'jNQXAC9IVRw'}}}};
+                        return {videoRenderer:{title:{simpleText:'Fixture song'},videoId:'jNQXAC9IVRw'}};
                     }}};
                     globalThis.run = async () => JSON.stringify({
                         page: await provider.browse({sourceInstanceId:'youtube',query:'test'}),
@@ -46,7 +46,7 @@ mod tests {
                 let result: Value = serde_json::from_str(&result.finish::<String>().unwrap()).unwrap();
                 assert_eq!(result["page"]["items"][0]["title"], "Fixture song");
                 assert_eq!(result["playback"]["durationMs"], 120000);
-                assert_eq!(result["requests"][0]["url"], "https://music.youtube.com/youtubei/v1/search");
+                assert_eq!(result["requests"][0]["url"], "https://www.youtube.com/youtubei/v1/search");
                 let body: Value = serde_json::from_str(result["requests"][1]["body"].as_str().unwrap()).unwrap();
                 assert_eq!(body["videoId"], json!("jNQXAC9IVRw"));
             });
