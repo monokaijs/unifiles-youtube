@@ -35,16 +35,21 @@ https://github.com/monokaijs/unifiles-youtube/releases/latest/download/index.cjs
 https://github.com/monokaijs/unifiles-youtube/releases/latest/download/SHA256SUMS
 ```
 
-For a pinned version, replace `latest/download` with `download/v1.0.0`.
+For a pinned version, replace `latest/download` with `download/v1.1.0`.
 The original-style raw CommonJS URL is:
 
 ```text
 https://raw.githubusercontent.com/monokaijs/unifiles-youtube/main/dist/index.cjs
 ```
 
-Checksums verify file integrity; they are not publisher signatures. The current
-UniFiles app bundles its provider at build time. Publishing these assets does not
-add remote installation or automatic updates to the app.
+Checksums verify file integrity; they are not publisher signatures.
+
+UniFiles loads this provider only after explicit installation. In the app, open
+**Media → Media sources → + → Install plugin** and enter
+`monokaijs/unifiles-youtube`. Installation uses the latest published release,
+verifies its checksums and saves the package locally. Use **Update plugin** in
+media sources to install a newer release; **Remove** unregisters it. A fresh app
+has no YouTube source. Updates are explicit rather than automatic.
 
 ## API
 
