@@ -8,8 +8,8 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const dist = path.join(root, 'dist');
 const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const manifest = JSON.parse(await readFile(path.join(root, 'plugin.json'), 'utf8'));
-if (pkg.version !== manifest.version || manifest.apiVersion !== 1 || manifest.id !== 'youtube') {
-  throw new Error('Package version and UniFiles API v1 manifest must agree');
+if (pkg.version !== manifest.version || manifest.apiVersion !== 2 || manifest.id !== 'youtube') {
+  throw new Error('Package version and UniFiles API v2 manifest must agree');
 }
 if (process.env.GITHUB_REF_TYPE === 'tag' && process.env.GITHUB_REF_NAME !== `v${pkg.version}`) {
   throw new Error('Release tag must match the package and manifest versions');

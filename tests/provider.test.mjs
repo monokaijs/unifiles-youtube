@@ -107,7 +107,7 @@ test('native plugin files and checksums match their source', async () => {
   assert.equal(await readFile(new URL('plugin.json', root), 'utf8'), await readFile(new URL('dist/youtube.json', root), 'utf8'));
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
   assert.deepEqual(normalize(manifest.capabilities), ['http']);
-  assert.equal(manifest.apiVersion, 1);
+  assert.equal(manifest.apiVersion, 2);
   const sums = (await readFile(new URL('dist/SHA256SUMS', root), 'utf8')).trim().split('\n');
   const files = (await readdir(new URL('dist/', root))).filter(file => file !== 'SHA256SUMS').sort();
   assert.deepEqual(sums.map(line => line.split('  ')[1]), files);
@@ -134,8 +134,24 @@ test('regular YouTube modern playlist and video lockups retain artwork, credits 
   assert.equal(page.items.length, 2);
   assert.equal(page.items[0].kind, 'collection');
   assert.match(page.items[0].reference.itemId, /^VLRD/);
-  assert.equal(page.items[1].kind, 'track');
+  assert.equal(page.items[1].kind, 'video');
   assert.ok(page.items[1].subtitle);
   assert.ok(page.items[1].durationMs > 0);
   assert.ok(page.items.every(item=>item.artwork.startsWith('https://')));
+});
+
+test('video mode keeps sound, honors quality and never falls back to audio-only', () => {
+  const muxed = {itag:18,height:360,qualityLabel:'360p',bitrate:300000,mimeType:'video/mp4; codecs="avc1.42001E, mp4a.40.2"',audioQuality:'AUDIO_QUALITY_LOW',url:'https://r1.googlevideo.com/360'};
+  const hd = {...muxed,itag:22,height:720,bitrate:900000,url:'https://r1.googlevideo.com/720'};
+  const data = player({adaptiveFormats:[{mimeType:'audio/mp4',url:'https://r1.googlevideo.com/audio',bitrate:128000}],formats:[muxed,hd,{...hd,itag:137,audioQuality:undefined,url:'https://r1.googlevideo.com/silent'}]});
+  for (const [,provider] of variants) {
+    assert.equal(provider.parsePlayback({data,options:{mode:'audio'}}).url,'https://r1.googlevideo.com/audio');
+    assert.equal(provider.parsePlayback({data,options:{mode:'video'}}).url,hd.url);
+    assert.equal(provider.parsePlayback({data,options:{mode:'video',mediaIndex:18}}).url,muxed.url);
+    assert.equal(provider.parsePlayback({data,options:{mode:'video',maxBitrateKbps:400}}).url,muxed.url);
+    assert.equal(provider.parsePlayback({data,options:{mode:'video'}}).canDownload,false);
+    assert.throws(()=>provider.parsePlayback({data,options:{mode:'video',mediaIndex:137}}),{code:'unsupported'});
+    assert.throws(()=>provider.parsePlayback({data:player({adaptiveFormats:data.streamingData.adaptiveFormats}),options:{mode:'video'}}),{code:'unsupported'});
+    assert.throws(()=>provider.parsePlayback({data,options:{mode:'invalid'}}),{code:'invalid_path'});
+  }
 });

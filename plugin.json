@@ -1,8 +1,8 @@
 {
   "id": "youtube",
   "name": "YouTube",
-  "version": "2.0.0",
-  "apiVersion": 1,
+  "version": "3.0.0",
+  "apiVersion": 2,
   "capabilities": [
     "http"
   ],
@@ -11,5 +11,20 @@
   ],
   "playbackHosts": [
     "*.googlevideo.com"
+  ],
+  "mediaCapabilities": {
+    "audio": true,
+    "video": true,
+    "search": true,
+    "downloads": true,
+    "related": true,
+    "details": true,
+    "qualitySelection": true
+  },
+  "artworkHosts": [
+    "*.ytimg.com",
+    "yt3.ggpht.com",
+    "lh3.googleusercontent.com",
+    "yt3.googleusercontent.com"
   ]
 }

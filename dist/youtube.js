@@ -38,7 +38,8 @@ function renderer(value, source, index) {
   const subtitle = modern ? text(meta?.metadata?.contentMetadataViewModel?.metadataRows?.[0]?.metadataParts?.[0]?.text) : text(value.ownerText ?? value.shortBylineText ?? value.longBylineText);
   return {
     id: `${id}:${index}`, reference: { sourceInstanceId: source, itemId: id }, title,
-    kind: video ? 'track' : playlist ? 'collection' : 'artist',
+    kind: video ? 'video' : playlist ? 'collection' : 'artist',
+    playbackModes: video ? ['video', 'audio'] : [],
     subtitle: subtitle?.replace(/ - Topic$/, '') ?? null,
     artwork: thumbnail(value), playable: !!video, resumePositionMs: 0,
     durationMs: duration(text(value.lengthText)) ?? duration(text(field(value, 'thumbnailOverlayTimeStatusRenderer')?.text)) ?? duration(field(value, 'thumbnailBadgeViewModel')?.text)
@@ -107,10 +108,23 @@ export async function browse({ sourceInstanceId, parent = null, query = null, cu
     headers: { "Content-Type": "application/json", "Origin": "https://www.youtube.com" }, body: JSON.stringify(body) });
   return parsePage({ data, sourceInstanceId, parent, query, cursor, offset });
 }
-export function parsePlayback({ data }) {
+function videoFormats(data, options = {}) {
+  if (options.videoCodecs?.length && !options.videoCodecs.includes("h264") || options.audioCodecs?.length && !options.audioCodecs.includes("aac") || options.containers?.length && !options.containers.includes("mp4")) return [];
+  return (data.streamingData?.formats ?? []).filter(f => typeof f.url === "string" && typeof f.audioQuality === "string" && f.mimeType?.startsWith("video/mp4") && f.mimeType.includes("avc1.") && f.mimeType.includes("mp4a.") && (!options.maxBitrateKbps || (f.bitrate ?? 0) <= options.maxBitrateKbps * 1000))
+    .sort((a, b) => (b.height ?? 0) - (a.height ?? 0) || (b.bitrate ?? 0) - (a.bitrate ?? 0));
+}
+export function parsePlayback({ data, options = {} }) {
   const status = data.playabilityStatus?.status;
   if (status === "LOGIN_REQUIRED") fail("authentication_failed", "YouTube requires sign-in for this item or network");
   if (status !== "OK") fail("unsupported", "This YouTube item is unavailable for playback");
+  if (options.mode && !["audio", "video"].includes(options.mode)) fail("invalid_path", "Unknown playback mode");
+  if (options.mode === "video") {
+    const formats = videoFormats(data, options);
+    const format = options.mediaIndex ? formats.find(f => f.itag === options.mediaIndex) : formats[0];
+    if (!format) fail("unsupported", "YouTube did not provide a compatible video stream with audio at this quality");
+    const seconds = Number(data.videoDetails?.lengthSeconds);
+    return {url: format.url, mimeType: "video/mp4", durationMs: Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : null, canDownload: false};
+  }
   const audio = (data.streamingData?.adaptiveFormats ?? []).filter(f => f.mimeType?.startsWith("audio/mp4") && typeof f.url === "string" && f.audioTrack?.audioIsDefault !== false);
   let format = audio.sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0))[0];
   if (!format) format = (data.streamingData?.formats ?? []).filter(f => typeof f.url === "string" && typeof f.audioQuality === "string" && f.mimeType?.startsWith("video/mp4") && f.mimeType.includes("mp4a.")).sort((a, b) => (a.bitrate ?? Number.MAX_SAFE_INTEGER) - (b.bitrate ?? Number.MAX_SAFE_INTEGER))[0];
@@ -120,10 +134,25 @@ export function parsePlayback({ data }) {
   return { url: format.url, mimeType: format.mimeType.split(";")[0],
     durationMs: Number.isSafeInteger(ms) ? ms : null, canDownload: true };
 }
-export async function resolve({ itemId }) {
+async function playerData(itemId) {
   videoId(itemId);
   const data = await host.http.json({ url: "https://www.youtube.com/youtubei/v1/player", method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": "com.google.android.youtube/21.02.35 (Linux; U; Android 11) gzip" },
     body: JSON.stringify({ context: { client: { clientName: "ANDROID", clientVersion: "21.02.35", androidSdkVersion: 30, osName: "Android", osVersion: "11", hl: "en", gl: "US" } }, videoId: itemId, contentCheckOk: true, racyCheckOk: true }) });
-  return parsePlayback({ data });
+  return data;
+}
+
+export async function resolve({ itemId, options = {} }) {
+  return parsePlayback({data: await playerData(itemId), options});
+}
+export async function details({itemId}) {
+  const data = await playerData(itemId);
+  const seconds = Number(data.videoDetails?.lengthSeconds);
+  return {title: data.videoDetails?.title ?? "YouTube video", summary: data.videoDetails?.shortDescription ?? null,
+    durationMs: Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : null,
+    versions: videoFormats(data).map(f => ({index: f.itag, title: f.qualityLabel ?? `${f.height ?? ''}p`, streams: []}))};
+}
+
+export async function related({sourceInstanceId, itemId, cursor = null}) {
+  return browse({sourceInstanceId, parent: `related:${itemId}`, cursor});
 }

@@ -1,10 +1,11 @@
-/** UniFiles media plugin API v1. The application supplies globalThis.host. */
+/** UniFiles media plugin API v2. The application supplies globalThis.host. */
 export interface MediaRef { sourceInstanceId: string; itemId: string; }
 export interface MediaItem {
   id: string;
   reference: MediaRef;
   title: string;
-  kind: "track" | "artist" | "album" | "collection";
+  kind: string;
+  playbackModes?: ("audio" | "video")[];
   subtitle: string | null;
   artwork: string | null;
   durationMs: number | null;
@@ -32,10 +33,14 @@ export interface HttpRequest {
   body?: string;
 }
 export interface Host {
-  apiVersion: 1;
+  apiVersion: 2;
   http: { json(request: HttpRequest): Promise<unknown> };
 }
 export function browse(request: BrowseRequest): Promise<MediaPage>;
-export function resolve(request: { sourceInstanceId: string; itemId: string }): Promise<ResolvedMedia>;
+export interface PlaybackOptions { mode?: "audio" | "video"; mediaIndex?: number; maxBitrateKbps?: number; videoCodecs?: string[]; audioCodecs?: string[]; containers?: string[]; }
+export function related(request: { sourceInstanceId: string; itemId: string; cursor?: string | null }): Promise<MediaPage>;
+export function resolve(request: { sourceInstanceId: string; itemId: string; options?: PlaybackOptions }): Promise<ResolvedMedia>;
 export function parsePage(request: BrowseRequest & { data: unknown; offset?: number }): MediaPage;
-export function parsePlayback(request: { data: unknown }): ResolvedMedia;
+export function parsePlayback(request: { data: unknown; options?: PlaybackOptions }): ResolvedMedia;
+
+export function details(request: {sourceInstanceId: string; itemId: string}): Promise<{title: string; summary: string | null; durationMs: number | null; versions: {index: number; title: string; streams: unknown[]}[]}>;

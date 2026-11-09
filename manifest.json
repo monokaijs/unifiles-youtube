@@ -1,8 +1,8 @@
 {
   "id": "youtube",
   "name": "YouTube",
-  "version": "2.0.0",
-  "apiVersion": 1,
+  "version": "3.0.0",
+  "apiVersion": 2,
   "capabilities": [
     "http"
   ],
@@ -12,6 +12,21 @@
   "playbackHosts": [
     "*.googlevideo.com"
   ],
-  "entry": "https://github.com/monokaijs/unifiles-youtube/releases/download/v2.0.0/youtube.js",
-  "sha256": "04c7dd4112ee9fe8b0c0670194bf4963475beb6c1555100da27e3d71e6cb2a24"
+  "mediaCapabilities": {
+    "audio": true,
+    "video": true,
+    "search": true,
+    "downloads": true,
+    "related": true,
+    "details": true,
+    "qualitySelection": true
+  },
+  "artworkHosts": [
+    "*.ytimg.com",
+    "yt3.ggpht.com",
+    "lh3.googleusercontent.com",
+    "yt3.googleusercontent.com"
+  ],
+  "entry": "https://github.com/monokaijs/unifiles-youtube/releases/download/v3.0.0/youtube.js",
+  "sha256": "cfe23893f90b72d4bdd82a9ef9928caaf2410e6115b0797402b5f1c5b0b7a042"
 }
