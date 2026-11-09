@@ -109,16 +109,34 @@ function collect(value, source, items, credits = false) {
   }
   for (const child of Object.values(value)) collect(child, source, items, credits);
 }
+function collectShelves(value, source, items, sections, offset) {
+  if (!value || typeof value !== "object" || items.length >= 500 || sections.length >= 40) return;
+  const shelf = value.musicCarouselShelfRenderer ?? value.musicShelfRenderer;
+  if (shelf) {
+    const title = text(shelf.header?.musicCarouselShelfBasicHeaderRenderer?.title) ?? text(shelf.title);
+    const start = items.length;
+    collect(shelf.contents, source, items);
+    if (items.length > start) sections.push({ title: title ?? "Explore", itemIds: items.slice(start).map((item, i) => `${item.reference.itemId}:${offset + start + i}`) });
+    return;
+  }
+  for (const child of Object.values(value)) collectShelves(child, source, items, sections, offset);
+}
 function parsePage({ data, sourceInstanceId, parent = null, query = null, cursor = null, offset = 0 }) {
   if (data.error) fail("connection_failed", `YouTube catalog error ${data.error.code}`);
   const items = [];
-  collect(data, sourceInstanceId, items);
-  if (parent === null && query === null && cursor === null) collect(data, sourceInstanceId, items, true);
+  const sections = [];
+  if (parent === null && query === null) collectShelves(data, sourceInstanceId, items, sections, offset);
+  if (!sections.length) collect(data, sourceInstanceId, items);
+  if (parent === null && query === null && cursor === null) {
+    const start = items.length;
+    collect(data, sourceInstanceId, items, true);
+    if (sections.length && sections.length < 40 && items.length > start) sections.push({ title: "Artists & albums", itemIds: items.slice(start).map((item, i) => `${item.reference.itemId}:${offset + start + i}`) });
+  }
   items.forEach((item, i) => {
     item.id = `${item.reference.itemId}:${offset + i}`;
   });
   const token = field(data, "nextContinuationData")?.continuation ?? field(data, "continuationCommand")?.token;
-  return { items, nextCursor: token ? JSON.stringify({ parent, query, token, offset: offset + items.length }) : null };
+  return { items, sections, nextCursor: token ? JSON.stringify({ parent, query, token, offset: offset + items.length }) : null };
 }
 async function browse({ sourceInstanceId, parent = null, query = null, cursor = null }) {
   if (!query?.trim()) query = null;

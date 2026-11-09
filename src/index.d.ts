@@ -11,7 +11,8 @@ export interface MediaItem {
   playable: boolean;
   resumePositionMs: number;
 }
-export interface MediaPage { items: MediaItem[]; nextCursor: string | null; }
+export interface MediaSection { title: string; itemIds: string[]; }
+export interface MediaPage { items: MediaItem[]; nextCursor: string | null; sections?: MediaSection[]; }
 export interface BrowseRequest {
   sourceInstanceId: string;
   parent?: string | null;

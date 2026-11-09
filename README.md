@@ -62,8 +62,9 @@ const playback = await resolve({
 });
 ```
 
-- `browse` returns `{items, nextCursor}` for search, home shelves, collections,
-  related songs, and continuation pages.
+- `browse` returns `{items, nextCursor, sections}` for search, home shelves, collections,
+  related songs, and continuation pages. Explore sections preserve YouTube’s shelf
+  titles and ordered `itemIds` referencing the same page’s items; search stays flat.
 - `resolve` returns `{url, mimeType, durationMs, canDownload}`. The native host
   validates the URL and creates the playback session. Resolve fresh URLs for each
   playback; signed media URLs should not be persisted.

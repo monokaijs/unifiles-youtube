@@ -38,6 +38,19 @@ for (const [name, provider, globals] of variants) {
     assert.deepEqual(JSON.parse(result.nextCursor), { parent: null, query: 'song', token: 'opaque', offset: 14 });
     assert.equal(provider.parsePage({ sourceInstanceId: 'youtube', data: Array(510).fill(track) }).items.length, 500);
   });
+  test(`${name}: Explore preserves ordered shelves and search stays flat`, () => {
+    const shelf = (title, contents) => ({ musicCarouselShelfRenderer: { header: { musicCarouselShelfBasicHeaderRenderer: { title: { simpleText: title } } }, contents } });
+    const data = { contents: [shelf('Trending', [track, track]), shelf('New music videos', [track])] };
+    const page = provider.parsePage({ sourceInstanceId: 'youtube', data, offset: 10 });
+    assert.deepEqual(normalize(page.sections), [
+      {title:'Trending',itemIds:['jNQXAC9IVRw:10','jNQXAC9IVRw:11']},
+      {title:'New music videos',itemIds:['jNQXAC9IVRw:12']},
+    ]);
+    assert.equal(page.items.length, 3);
+    const search = provider.parsePage({ sourceInstanceId: 'youtube', data, query: 'song' });
+    assert.equal(search.items.length, 3);
+    assert.equal(search.sections.length, 0);
+  });
   test(`${name}: home credits are deduplicated and unrelated menus are ignored`, () => {
     const row = { musicTwoRowItemRenderer: {
       subtitle: { runs: [{ text: 'Artist', navigationEndpoint: { browseEndpoint: { browseId: 'UCartist' } } }] },
