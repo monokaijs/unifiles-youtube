@@ -1,0 +1,66 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Install Rust compatibility-test toolchain
+        run: rustup toolchain install 1.88.0 --profile minimal --no-self-update
+      - name: Build and test all formats and QuickJS compatibility
+        run: npm run check
+        env:
+          RUSTUP_TOOLCHAIN: 1.88.0
+      - name: Verify committed distribution is reproducible
+        run: |
+          git diff --exit-code -- dist
+          if [ -n "$(git ls-files --others --exclude-standard -- dist)" ]; then
+            echo "Untracked distribution files: rebuild and commit dist/." >&2
+            exit 1
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: unifiles-youtube-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Publish tagged release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" dist/* --verify-tag \
+            --title "YouTube source $RELEASE_TAG" \
+            --notes "YouTube Music provider for UniFiles plugin API v1. Includes ESM, CommonJS, IIFE, TypeScript declarations, the native plugin manifest/module pair, and SHA-256 checksums."

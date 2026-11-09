@@ -1,0 +1,40 @@
+/** UniFiles media plugin API v1. The application supplies globalThis.host. */
+export interface MediaRef { sourceInstanceId: string; itemId: string; }
+export interface MediaItem {
+  id: string;
+  reference: MediaRef;
+  title: string;
+  kind: "track" | "artist" | "album" | "collection";
+  subtitle: string | null;
+  artwork: string | null;
+  durationMs: number | null;
+  playable: boolean;
+  resumePositionMs: number;
+}
+export interface MediaPage { items: MediaItem[]; nextCursor: string | null; }
+export interface BrowseRequest {
+  sourceInstanceId: string;
+  parent?: string | null;
+  query?: string | null;
+  cursor?: string | null;
+}
+export interface ResolvedMedia {
+  url: string;
+  mimeType: string;
+  durationMs: number | null;
+  canDownload: boolean;
+}
+export interface HttpRequest {
+  url: string;
+  method?: "GET" | "POST";
+  headers?: Record<string, string>;
+  body?: string;
+}
+export interface Host {
+  apiVersion: 1;
+  http: { json(request: HttpRequest): Promise<unknown> };
+}
+export function browse(request: BrowseRequest): Promise<MediaPage>;
+export function resolve(request: { sourceInstanceId: string; itemId: string }): Promise<ResolvedMedia>;
+export function parsePage(request: BrowseRequest & { data: unknown; offset?: number }): MediaPage;
+export function parsePlayback(request: { data: unknown }): ResolvedMedia;

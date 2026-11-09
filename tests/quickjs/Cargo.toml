@@ -1,0 +1,10 @@
+[package]
+name = "unifiles-youtube-quickjs-tests"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.88"
+publish = false
+
+[dev-dependencies]
+rquickjs = { version = "=0.14.0", default-features = false, features = ["std"] }
+serde_json = "1"

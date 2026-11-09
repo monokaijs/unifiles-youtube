@@ -1,0 +1,9 @@
+{
+  "id": "youtube",
+  "name": "YouTube Music",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "capabilities": ["http"],
+  "httpHosts": ["music.youtube.com", "www.youtube.com"],
+  "playbackHosts": ["*.googlevideo.com"]
+}
