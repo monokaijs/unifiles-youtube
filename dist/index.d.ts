@@ -11,6 +11,9 @@ export interface MediaItem {
   durationMs: number | null;
   playable: boolean;
   resumePositionMs: number;
+  artist?: string | null;
+  album?: string | null;
+  artworkAspect?: "square" | "wide" | "poster" | null;
 }
 export interface MediaSection { title: string; itemIds: string[]; }
 export interface MediaPage { items: MediaItem[]; nextCursor: string | null; sections?: MediaSection[]; }
@@ -25,6 +28,8 @@ export interface ResolvedMedia {
   mimeType: string;
   durationMs: number | null;
   canDownload: boolean;
+  expiresAt: number | null;
+  subtitles?: { title: string; language: string | null; url: string }[];
 }
 export interface HttpRequest {
   url: string;

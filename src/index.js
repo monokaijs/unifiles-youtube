@@ -1,4 +1,4 @@
-// Provider API v1. HTTP, URL validation, downloads and playback remain native.
+// UniFiles media plugin API v3. HTTP, URL validation, downloads and playback remain native.
 // InnerTube is unofficial. Restricted content is reported, never bypassed.
 const fail = (code, message) => { throw Object.assign(new Error(message), { code }); };
 const videoId = id => {
@@ -26,6 +26,25 @@ function duration(value) {
   const ms = value.split(":").reduce((total, part) => total * 60 + Number(part), 0) * 1000;
   return Number.isSafeInteger(ms) ? ms : null;
 }
+// Signed stream URLs carry their own expiry in seconds. The host needs it in milliseconds.
+function expiresAt(url) {
+  const seconds = Number(/[?&]expire=(\d+)/.exec(url)?.[1]);
+  return Number.isSafeInteger(seconds) && seconds > 0 ? seconds * 1000 : null;
+}
+// YouTube's 720p thumbnails are 16:9 even when the row is not a video.
+const artworkAspect = (video, artwork) => (video || artwork?.includes("/hq720.") ? "wide" : "square");
+function captions(data) {
+  const tracks = data.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
+  const seen = new Set();
+  const files = [];
+  for (const track of tracks) {
+    const title = text(track.name) ?? track.languageCode;
+    if (typeof track.baseUrl !== "string" || !title || seen.has(title) || files.length >= 64) continue;
+    seen.add(title);
+    files.push({ title, language: track.languageCode ?? null, url: `${track.baseUrl}&fmt=vtt` });
+  }
+  return files;
+}
 function renderer(value, source, index) {
   const modern = value.contentType?.startsWith('LOCKUP_CONTENT_TYPE_');
   const meta = value.metadata?.lockupMetadataViewModel;
@@ -36,12 +55,15 @@ function renderer(value, source, index) {
   const id = video ?? (playlist ? `VL${playlist}` : value.channelId);
   if (!id) return null;
   const subtitle = modern ? text(meta?.metadata?.contentMetadataViewModel?.metadataRows?.[0]?.metadataParts?.[0]?.text) : text(value.ownerText ?? value.shortBylineText ?? value.longBylineText);
+  const channel = subtitle?.replace(/ - Topic$/, '') ?? null;
+  // Lockups also carry the channel avatar, so only the media's own image counts.
+  const artwork = thumbnail((modern ? value.contentImage : value.thumbnail) ?? value);
   return {
     id: `${id}:${index}`, reference: { sourceInstanceId: source, itemId: id }, title,
     kind: video ? 'video' : playlist ? 'collection' : 'artist',
     playbackModes: video ? ['video', 'audio'] : [],
-    subtitle: subtitle?.replace(/ - Topic$/, '') ?? null,
-    artwork: thumbnail(value), playable: !!video, resumePositionMs: 0,
+    subtitle: channel, artist: video ? channel : null,
+    artwork, artworkAspect: artworkAspect(video, artwork), playable: !!video, resumePositionMs: 0,
     durationMs: duration(text(value.lengthText)) ?? duration(text(field(value, 'thumbnailOverlayTimeStatusRenderer')?.text)) ?? duration(field(value, 'thumbnailBadgeViewModel')?.text)
   };
 }
@@ -123,7 +145,8 @@ export function parsePlayback({ data, options = {} }) {
     const format = options.mediaIndex ? formats.find(f => f.itag === options.mediaIndex) : formats[0];
     if (!format) fail("unsupported", "YouTube did not provide a compatible video stream with audio at this quality");
     const seconds = Number(data.videoDetails?.lengthSeconds);
-    return {url: format.url, mimeType: "video/mp4", durationMs: Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : null, canDownload: false};
+    return {url: format.url, mimeType: "video/mp4", durationMs: Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : null, canDownload: false,
+      expiresAt: expiresAt(format.url), subtitles: captions(data)};
   }
   const audio = (data.streamingData?.adaptiveFormats ?? []).filter(f => f.mimeType?.startsWith("audio/mp4") && typeof f.url === "string" && f.audioTrack?.audioIsDefault !== false);
   let format = audio.sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0))[0];
@@ -132,7 +155,7 @@ export function parsePlayback({ data, options = {} }) {
   const seconds = data.videoDetails?.lengthSeconds;
   const ms = typeof seconds === "string" && /^\d+$/.test(seconds) ? Number(seconds) * 1000 : null;
   return { url: format.url, mimeType: format.mimeType.split(";")[0],
-    durationMs: Number.isSafeInteger(ms) ? ms : null, canDownload: true };
+    durationMs: Number.isSafeInteger(ms) ? ms : null, canDownload: true, expiresAt: expiresAt(format.url) };
 }
 async function playerData(itemId) {
   videoId(itemId);

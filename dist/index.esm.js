@@ -27,6 +27,23 @@ function duration(value) {
   const ms = value.split(":").reduce((total, part) => total * 60 + Number(part), 0) * 1e3;
   return Number.isSafeInteger(ms) ? ms : null;
 }
+function expiresAt(url) {
+  const seconds = Number(/[?&]expire=(\d+)/.exec(url)?.[1]);
+  return Number.isSafeInteger(seconds) && seconds > 0 ? seconds * 1e3 : null;
+}
+var artworkAspect = (video, artwork) => video || artwork?.includes("/hq720.") ? "wide" : "square";
+function captions(data) {
+  const tracks = data.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
+  const seen = /* @__PURE__ */ new Set();
+  const files = [];
+  for (const track of tracks) {
+    const title = text(track.name) ?? track.languageCode;
+    if (typeof track.baseUrl !== "string" || !title || seen.has(title) || files.length >= 64) continue;
+    seen.add(title);
+    files.push({ title, language: track.languageCode ?? null, url: `${track.baseUrl}&fmt=vtt` });
+  }
+  return files;
+}
 function renderer(value, source, index) {
   const modern = value.contentType?.startsWith("LOCKUP_CONTENT_TYPE_");
   const meta = value.metadata?.lockupMetadataViewModel;
@@ -37,14 +54,18 @@ function renderer(value, source, index) {
   const id = video ?? (playlist ? `VL${playlist}` : value.channelId);
   if (!id) return null;
   const subtitle = modern ? text(meta?.metadata?.contentMetadataViewModel?.metadataRows?.[0]?.metadataParts?.[0]?.text) : text(value.ownerText ?? value.shortBylineText ?? value.longBylineText);
+  const channel = subtitle?.replace(/ - Topic$/, "") ?? null;
+  const artwork = thumbnail((modern ? value.contentImage : value.thumbnail) ?? value);
   return {
     id: `${id}:${index}`,
     reference: { sourceInstanceId: source, itemId: id },
     title,
     kind: video ? "video" : playlist ? "collection" : "artist",
     playbackModes: video ? ["video", "audio"] : [],
-    subtitle: subtitle?.replace(/ - Topic$/, "") ?? null,
-    artwork: thumbnail(value),
+    subtitle: channel,
+    artist: video ? channel : null,
+    artwork,
+    artworkAspect: artworkAspect(video, artwork),
     playable: !!video,
     resumePositionMs: 0,
     durationMs: duration(text(value.lengthText)) ?? duration(text(field(value, "thumbnailOverlayTimeStatusRenderer")?.text)) ?? duration(field(value, "thumbnailBadgeViewModel")?.text)
@@ -137,7 +158,14 @@ function parsePlayback({ data, options = {} }) {
     const format2 = options.mediaIndex ? formats.find((f) => f.itag === options.mediaIndex) : formats[0];
     if (!format2) fail("unsupported", "YouTube did not provide a compatible video stream with audio at this quality");
     const seconds2 = Number(data.videoDetails?.lengthSeconds);
-    return { url: format2.url, mimeType: "video/mp4", durationMs: Number.isFinite(seconds2) && seconds2 >= 0 ? seconds2 * 1e3 : null, canDownload: false };
+    return {
+      url: format2.url,
+      mimeType: "video/mp4",
+      durationMs: Number.isFinite(seconds2) && seconds2 >= 0 ? seconds2 * 1e3 : null,
+      canDownload: false,
+      expiresAt: expiresAt(format2.url),
+      subtitles: captions(data)
+    };
   }
   const audio = (data.streamingData?.adaptiveFormats ?? []).filter((f) => f.mimeType?.startsWith("audio/mp4") && typeof f.url === "string" && f.audioTrack?.audioIsDefault !== false);
   let format = audio.sort((a, b) => (b.bitrate ?? 0) - (a.bitrate ?? 0))[0];
@@ -149,7 +177,8 @@ function parsePlayback({ data, options = {} }) {
     url: format.url,
     mimeType: format.mimeType.split(";")[0],
     durationMs: Number.isSafeInteger(ms) ? ms : null,
-    canDownload: true
+    canDownload: true,
+    expiresAt: expiresAt(format.url)
   };
 }
 async function playerData(itemId) {

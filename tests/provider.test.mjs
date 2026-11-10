@@ -107,7 +107,7 @@ test('native plugin files and checksums match their source', async () => {
   assert.equal(await readFile(new URL('plugin.json', root), 'utf8'), await readFile(new URL('dist/youtube.json', root), 'utf8'));
   const manifest = JSON.parse(await readFile(new URL('manifest.json', root), 'utf8'));
   assert.deepEqual(normalize(manifest.capabilities), ['http']);
-  assert.equal(manifest.apiVersion, 2);
+  assert.equal(manifest.apiVersion, 3);
   const sums = (await readFile(new URL('dist/SHA256SUMS', root), 'utf8')).trim().split('\n');
   const files = (await readdir(new URL('dist/', root))).filter(file => file !== 'SHA256SUMS').sort();
   assert.deepEqual(sums.map(line => line.split('  ')[1]), files);
@@ -154,4 +154,28 @@ test('video mode keeps sound, honors quality and never falls back to audio-only'
     assert.throws(()=>provider.parsePlayback({data:player({adaptiveFormats:data.streamingData.adaptiveFormats}),options:{mode:'video'}}),{code:'unsupported'});
     assert.throws(()=>provider.parsePlayback({data,options:{mode:'invalid'}}),{code:'invalid_path'});
   }
+});
+
+test('catalog rows carry structured metadata and playback states its expiry and captions', () => {
+  const row = { videoRenderer: { videoId: 'jNQXAC9IVRw', title: { simpleText: 'Clip' }, ownerText: { simpleText: 'Channel - Topic' }, thumbnail: { thumbnails: [{ url: 'https://i.ytimg.com/vi/x/hq720.jpg' }] } } };
+  const item = canonical.parsePage({ sourceInstanceId: 'youtube', data: [row] }).items[0];
+  assert.equal(item.subtitle, 'Channel');
+  assert.equal(item.artist, 'Channel');
+  assert.equal(item.artworkAspect, 'wide');
+  const format = { itag: 18, mimeType: 'video/mp4; codecs="avc1.42001E, mp4a.40.2"', audioQuality: 'LOW', url: 'https://r1.googlevideo.com/v?expire=2000000000&x=1', bitrate: 1 };
+  const data = { playabilityStatus: { status: 'OK' }, streamingData: { formats: [format] }, videoDetails: { lengthSeconds: '10' },
+    captions: { playerCaptionsTracklistRenderer: { captionTracks: [
+      { baseUrl: 'https://www.youtube.com/api/timedtext?v=x', name: { simpleText: 'English' }, languageCode: 'en' },
+      { baseUrl: 'https://www.youtube.com/api/timedtext?v=y', name: { simpleText: 'English' }, languageCode: 'en' },
+    ] } } };
+  const resolved = canonical.parsePlayback({ data, options: { mode: 'video' } });
+  assert.equal(resolved.expiresAt, 2000000000000);
+  assert.deepEqual(normalize(resolved.subtitles), [{ title: 'English', language: 'en', url: 'https://www.youtube.com/api/timedtext?v=x&fmt=vtt' }]);
+});
+
+test('lockups use the media image rather than the channel avatar', () => {
+  const lockupViewModel = { contentType: 'LOCKUP_CONTENT_TYPE_VIDEO', contentId: 'jNQXAC9IVRw',
+    metadata: { lockupMetadataViewModel: { title: { content: 'Clip' }, image: { decoratedAvatarViewModel: { avatar: { avatarViewModel: { image: { sources: [{ url: 'https://yt3.ggpht.com/avatar' }] } } } } } } },
+    contentImage: { thumbnailViewModel: { image: { sources: [{ url: 'https://i.ytimg.com/vi/x/hq720.jpg' }] } } } };
+  assert.equal(canonical.parsePage({ sourceInstanceId: 'youtube', data: { lockupViewModel } }).items[0].artwork, 'https://i.ytimg.com/vi/x/hq720.jpg');
 });

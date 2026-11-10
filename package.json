@@ -1,6 +1,6 @@
 {
   "name": "unifiles-youtube",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Regular YouTube provider for the UniFiles JavaScript plugin API",
   "private": true,
   "type": "module",

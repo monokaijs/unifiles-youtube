@@ -1,8 +1,8 @@
 {
   "id": "youtube",
   "name": "YouTube",
-  "version": "3.0.0",
-  "apiVersion": 2,
+  "version": "4.0.0",
+  "apiVersion": 3,
   "capabilities": [
     "http"
   ],
